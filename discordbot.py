@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 import time
 from discord.ext import tasks
 import random
+import os
 
 
 client = discord.Client()
