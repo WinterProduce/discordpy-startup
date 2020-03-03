@@ -124,6 +124,7 @@ wadai = [ # 話題リスト
 async def on_message(message):
     global memberlist
     if client.user != message.author:
+
         if message.content == '?help':
             authorname = 'れんあいのくにの乙女🍎'
             authorurl = 'https://github.com/WinterProduce/discordpy-startup/blob/master/discordbot.py'
@@ -156,14 +157,17 @@ async def on_message(message):
             await message.channel.send(f'BOT数：{bot_count}')
 
         if message.content == '?members':
-            allmember = [member.name for member in client.get_all_members() if not member.bot]
-            await message.channel.send(f'メンバー一覧 : {allmember}')
-            
+            for memberkey, in memberlist.keys():
+                await message.channel.send(f'メンバー一覧 : {memberkey}')
+    
         if message.content == '?resetvclist':
-            membername = [member.name for member in client.get_all_members() if not member.bot] # 全員分のNAMEを辞書のkeyに入れる処理
-            zero = [0,0,0,0,0,0,0,0,0,0,0,0,0,0] # 辞書の値に全員分０を代入
-            memberlist = dict(zip(membername, zero)) # リストを使用して辞書に格納
-            await message.channel.send('総接続時間をリセットしました！')
+            if discord.utils.get(message.author.roles, id = '681854746092634209'):
+                membername = [member.name for member in client.get_all_members() if not member.bot] # 全員分のNAMEを辞書のkeyに入れる処理
+                zero = [0,0,0,0,0,0,0,0,0,0,0,0,0,0] # 辞書の値に全員分０を代入
+                memberlist = dict(zip(membername, zero)) # リストを使用して辞書に格納
+                await message.channel.send('総接続時間をリセットしました！')
+            else:
+                await message.channel.send('君の権限だと実行できないよ！')
 
         if message.content == '?vc':
             for memberkey, membervalue in memberlist.items():
