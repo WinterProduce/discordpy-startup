@@ -11,7 +11,6 @@ import os
 client = discord.Client()
 pretime_dict = {}
 memberlist = {}
-alert_channel = client.get_channel(682141572317446167)
 JST = timezone(timedelta(hours=+9), 'JST')
 
 token = os.environ['DISCORD_BOT_TOKEN']
@@ -23,7 +22,8 @@ async def on_ready():
     print(client.user.name)
     print(client.user.id)
     print('------')
-    await alert_channel.send('今から活動開始します！')
+    channel = client.get_channel(682141572317446167)
+    await channel.send('今から活動開始します！')
     activity = discord.Game(name='活動してるよ！')
     await client.change_presence(activity=activity)
 
@@ -33,34 +33,38 @@ async def Resetvclist():
     membername = [member.name for member in client.get_all_members() if not member.bot] # 全員分のNAMEを辞書のkeyに入れる処理
     zero = [0,0,0,0,0,0,0,0,0,0,0,0,0,0] # 辞書の値に全員分０を代入
     memberlist = dict(zip(membername, zero)) # リストを使用して辞書に格納
-    await alert_channel.send('総接続時間をリセットしました')
+    channel = client.get_channel(682141572317446167)
+    await channel.send('総接続時間をリセットしました')
 
 # １週間の総接続時間を出力する処理
 async def Sendvclist():
+    channel = client.get_channel(682141572317446167)
     for memberkey, membervalue in memberlist.items():
-        await alert_channel.send(f'ユーザー名: {memberkey}  通話時間: {membervalue} 秒')
+        await channel.send(f'ユーザー名: {memberkey}  通話時間: {membervalue} 秒')
     for memberkey60, membervalue60 in memberlist.items():
         if membervalue60 >= 3600:
             vc60 = {memberkey60}
-            await alert_channel.send(f'総接続時間が60分以上のユーザー: {vc60}')
+            await channel.send(f'総接続時間が60分以上のユーザー: {vc60}')
         elif membervalue60 < 3600:
             vc0 = {memberkey60}
-            await alert_channel.send(f'総接続時間が60分未満のユーザー: {vc0}')
+            await channel.send(f'総接続時間が60分未満のユーザー: {vc0}')
 
 
 # ６０秒に一回ループさせる処理
 @tasks.loop(seconds=60)
 async def weekloop():
     checktime = datetime.now(JST).strftime('%a-%H:%M')
+    channel = client.get_channel(682141572317446167)
     if checktime == 'Tue-15:30':
-        await alert_channel.send('月曜日の０時０分になったため総接続時間を出力しデータをクリアします')
+        await channel.send('月曜日の０時０分になったため総接続時間を出力しデータをクリアします')
         await Sendvclist()
         await Resetvclist()
 
 async def dayloop():
     checkday = datetime.now(JST).strftime('%H:%M')
     if checkday == '00:00':
-        await alert_channel.send('前日、Inしたかどうかを検知します')
+        channel = client.get_channel(682141572317446167)
+        await channel.send('前日、Inしたかどうかを検知します')
         
     
 # ループ処理実行
@@ -71,6 +75,7 @@ weekloop.start()
 async def on_voice_state_update(member, before, after): 
     global pretime_dict # 辞書型で入室時間をユーザーごとに記録することで入室時間の再代入による不具合を回避
     global memberlist # VCの１週間の記録用の辞書
+    channel = client.get_channel(682141572317446167)
     if member.guild.id == 681853809789501440 and (before.channel != after.channel): # 特定のサーバーだけ処理が行われるように
         if not member.bot:
             print('ボイスチャンネルに変化があったよ！')
@@ -79,7 +84,7 @@ async def on_voice_state_update(member, before, after):
             if before.channel is None:  # ここから入室時の処理
                 pretime_dict[member.name] = time.time() 
                 msg = f'{now:%m/%d-%H:%M} に {member.name} が {after.channel.name} に参加しました。' # 入室ログ
-                await alert_channel.send(msg)
+                await channel.send(msg)
                 print(pretime_dict)
 
             elif after.channel is None: # 退出時の処理
@@ -102,11 +107,11 @@ async def on_voice_state_update(member, before, after):
                     endseconds = interimendminutes % 60
 
                 msg = f'{now:%m/%d-%H:%M} に {member.name} が {before.channel.name} から退出しました。 通話時間は {int(endhours)} 時間 {int(endminutes)} 分 {int(endseconds)} 秒でした。' # 退出ログ
-                await alert_channel.send(msg)
+                await channel.send(msg)
 
                 # ここから通話時間を記録していく処理
                 memberlist[member.name] = memberlist[member.name] + int(roundingtime)
-                await alert_channel.send('総接続時間を更新したよ！')
+                await channel.send('総接続時間を更新したよ！')
 
 # ランダムに話題を出すプログラム
 wadai = [ # 話題リスト
@@ -181,12 +186,15 @@ async def on_message(message):
                 await message.channel.send('君の権限だと実行できないよ！')
 
         if message.content == '?vc':
+            channel = client.get_channel(682141572317446167)
             for memberkey, membervalue in memberlist.items():
-                await alert_channel.send(f'ユーザー名: {memberkey}  通話時間: {membervalue} 秒')
+                await channel.send(f'ユーザー名: {memberkey}  通話時間: {membervalue} 秒')
             for memberkey60, membervalue60 in memberlist.items():
                 if membervalue60 >= 3600:
-                    await alert_channel.send(f'総接続時間が60分以上のユーザー: {memberkey60}')
-                else:
-                    await alert_channel.send('総接続時間が60分以上のユーザーはいませんでした')
+                    vc60 = {memberkey60}
+                    await channel.send(f'総接続時間が60分以上のユーザー: {vc60}')
+                elif membervalue60 < 3600:
+                    vc0 = {memberkey60}
+                    await channel.send(f'総接続時間が60分未満のユーザー: {vc0}')
 
 client.run(token)
