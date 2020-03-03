@@ -46,7 +46,7 @@ async def Sendvclist():
 async def loop():
     loop_channel = client.get_channel(682141572317446167)
     checktime = datetime.now(JST).strftime('%a-%H:%M')
-    if checktime == 'Tue-15:30':
+    if checktime == 'Mon-00:00':
         await loop_channel.send('月曜日の０時０分になったため総接続時間を出力しデータをクリアします')
         await Sendvclist()
         await Resetvclist()
