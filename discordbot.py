@@ -12,7 +12,7 @@ pretime_dict = {}
 memberlist = {}
 
 token = os.environ['DISCORD_BOT_TOKEN']
-schannel = os.environ['SCHANNEL']
+SCHANNEL = os.environ['SCHANNEL']
 
 # Botログイン処理
 @client.event
