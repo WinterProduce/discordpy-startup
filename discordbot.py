@@ -12,7 +12,6 @@ pretime_dict = {}
 memberlist = {}
 
 token = os.environ['DISCORD_BOT_TOKEN']
-channelid = os.environ['SCHANNEL']
 
 # Botログイン処理
 @client.event
@@ -21,7 +20,7 @@ async def on_ready():
     print(client.user.name)
     print(client.user.id)
     print('------')
-    startup_channel = client.get_channel(channelid)
+    startup_channel = client.get_channel(682141572317446167)
     await startup_channel.send('今から活動開始します！')
 # ここからボイスチャンネルの入退出を検知する処理
 @client.event
@@ -31,7 +30,7 @@ async def on_voice_state_update(member, before, after):
     if member.guild.id == 681853809789501440 and (before.channel != after.channel): # 特定のサーバーだけ処理が行われるように
         print('ボイスチャンネルに変化があったよ！')
         now = datetime.now()
-        alert_channel = client.get_channel(channelid) # 入退室ログを出力するチャンネルを指定
+        alert_channel = client.get_channel(682141572317446167) # 入退室ログを出力するチャンネルを指定
 
         if before.channel is None:  # ここから入室時の処理
             pretime_dict[member.name] = time.time() 
