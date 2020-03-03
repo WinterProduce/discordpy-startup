@@ -22,6 +22,31 @@ async def on_ready():
     print('------')
     startup_channel = client.get_channel(682141572317446167)
     await startup_channel.send('今から活動開始します！')
+    game = discord.game('活動中だよ！')
+    await client.change_presence(status = discord.status.online, activity = game)
+
+# 指定時間に総接続時間をリセットする処理
+async def Resetvclist():
+    reset_channel = client.get_channel(682141572317446167)
+    membername = [member.name for member in client.get_all_members() if not member.bot] # 全員分のNAMEを辞書のkeyに入れる処理
+    zero = [0,0,0,0,0,0,0,0,0,0,0,0,0,0] # 辞書の値に全員分０を代入
+    memberlist = dict(zip(membername, zero)) # リストを使用して辞書に格納
+    await reset_channel.send('総接続時間をリセットしました')
+
+async def Sendvclist():
+    vclist_channel = client.get_channel(682141572317446167)
+    for memberkey, membervalue in memberlist.items():
+    await vclist_channel.send(f'ユーザー名: {memberkey}  通話時間: {membervalue}　秒')
+    
+@tasks.loop(seconds=60)
+async def loop():
+    loop_channel = client.get_channel(682141572317446167)
+    checktime = datetime.now().strftime('%a-%H:%M')
+    if checktime = 'Mon-00:00':
+        await loop_channel.send('月曜日の０時０分になったため総接続時間を出力しデータをクリアします')
+        await Sendvclist()
+        await Resetvclist()
+@tasks.loop(seconds=60)
 # ここからボイスチャンネルの入退出を検知する処理
 @client.event
 async def on_voice_state_update(member, before, after): 
@@ -86,12 +111,13 @@ wadai = [ # 話題リスト
     ""
 ]
 
+# ここからコマンド関連の処理
 @client.event
 async def on_message(message):
     global memberlist
     if client.user != message.author:
         if message.content == '?help':
-            await message.channel.send('?wadaiで私が話題を提供してあげるよ！')
+            await message.channel.send('?wadaiで私が話題を提供してあげるよ！ \n　?countでサーバー人数を表示するよ！ \n ?vcで全員の総接続時間を表示するよ \n ?resetvclistで総接続時間を表示するよ！)
 
         if message.content == '?wadai':
             choice = random.choice(wadai)
@@ -115,14 +141,14 @@ async def on_message(message):
             allmember = [member.name for member in client.get_all_members() if not member.bot]
             await message.channel.send(f'メンバー一覧 : {allmember}')
             
-        if message.content == '?reset':
+        if message.content == '?resetvclist':
             membername = [member.name for member in client.get_all_members() if not member.bot] # 全員分のNAMEを辞書のkeyに入れる処理
             zero = [0,0,0,0,0,0,0,0,0,0,0,0,0,0] # 辞書の値に全員分０を代入
             memberlist = dict(zip(membername, zero)) # リストを使用して辞書に格納
             await message.channel.send('総接続時間記録の値、すべてに０を代入しました')
         if message.content == '?vc':
             for memberkey, membervalue in memberlist.items():
-                await message.channel.send(f'ユーザー名: {memberkey}  通話時間: {membervalue}')
+                await message.channel.send(f'ユーザー名: {memberkey}  通話時間: {membervalue}　秒')
 
 
 
