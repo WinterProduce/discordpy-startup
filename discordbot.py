@@ -121,7 +121,9 @@ async def on_message(message):
             zero = [0,0,0,0,0,0,0,0,0,0,0,0,0,0] # 辞書の値に全員分０を代入
             memberlist = dict(zip(memberid, zero)) # リストを使用して辞書に格納
             await message.channel.send('総接続時間記録の値、すべてに０を代入しました')
+        if message.content == '?vc':
+            await message.channel.send(memberlist)
 
 
 
-.run(token)
+bot.run(token)
