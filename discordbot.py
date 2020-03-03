@@ -41,8 +41,11 @@ async def Sendvclist():
     vclist_channel = client.get_channel(682141572317446167)
     for memberkey, membervalue in memberlist.items():
         await vclist_channel.send(f'ユーザー名: {memberkey}  通話時間: {membervalue} 秒')
-        if membervalue >= 3600:
-            await vclist_channel.send(f'総接続時間が60分以上のユーザー {memberkey}')
+    for memberkey60, membervalue60 in memberlist.items():
+        if membervalue60 >= 3600:
+            await vclist_channel.send(f'総接続時間が60分以上のユーザー: {memberkey60}')
+        else:
+            await vclist_channel.send('総接続時間が60分以上のユーザーはいませんでした')
 
 # ６０秒に一回ループさせる処理
 @tasks.loop(seconds=60)
