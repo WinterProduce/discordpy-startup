@@ -112,16 +112,16 @@ async def on_message(message):
             await message.channel.send(f'BOT数：{bot_count}')
 
         if message.content == '?members':
-            allmember = [member.name for member in client.get_all_members()]
+            allmember = [member.name for member in client.get_all_members() if not member.bot]
             await message.channel.send(f'メンバー一覧 : {allmember}')
             
         if message.content == '?reset':
-            memberid = [member.name for member in client.get_all_members()] # 全員分のNAMEを辞書のkeyに入れる処理
+            membername = [member.name for member in client.get_all_members()　if not member.bot] # 全員分のNAMEを辞書のkeyに入れる処理
             zero = [0,0,0,0,0,0,0,0,0,0,0,0,0,0] # 辞書の値に全員分０を代入
-            memberlist = dict(zip(memberid, zero)) # リストを使用して辞書に格納
+            memberlist = dict(zip(membername, zero)) # リストを使用して辞書に格納
             await message.channel.send('総接続時間記録の値、すべてに０を代入しました')
         if message.content == '?vc':
-            await message.channel.send(memberlist)
+            await message.channel.send('以前のresetからの総接続時間はこちらです！'memberlist)
 
 
 
