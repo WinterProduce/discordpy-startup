@@ -15,7 +15,7 @@ token = os.environ['DISCORD_BOT_TOKEN']
 schannel = os.environ['SCHANNEL']
 
 # Botログイン処理
-@bot.event
+@client.event
 async def on_ready():
     print('起動完了しました！')
     print(client.user.name)
@@ -24,7 +24,7 @@ async def on_ready():
     startup_channel = client.get_channel(SCHANNEL)
     await startup_channel.send('今から活動開始します！')
 # ここからボイスチャンネルの入退出を検知する処理
-@bot.event
+@client.event
 async def on_voice_state_update(member, before, after): 
     global pretime_dict # 辞書型で入室時間をユーザーごとに記録することで入室時間の再代入による不具合を回避
     global memberlist # VCの１週間の記録用の辞書
@@ -87,7 +87,7 @@ wadai = [ # 話題リスト
     ""
 ]
 
-@bot.event
+@client.event
 async def on_message(message):
     global memberlist
     if client.user != message.author:
@@ -126,4 +126,4 @@ async def on_message(message):
 
 
 
-bot.run(token)
+client.run(token)
