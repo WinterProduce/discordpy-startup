@@ -122,7 +122,7 @@ async def on_message(message):
             await message.channel.send('総接続時間記録の値、すべてに０を代入しました')
         if message.content == '?vc':
             for memberkey, membervalue in memberlist.items():
-                await message.channel.send("ユーザー名:" + memberkey + " 通話時間:" + membervalue)
+                await message.channel.send(f'ユーザー名:' {memberkey} ' 通話時間:' {membervalue})
 
 
 
