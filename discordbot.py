@@ -36,7 +36,7 @@ async def Resetvclist():
 async def Sendvclist():
     vclist_channel = client.get_channel(682141572317446167)
     for memberkey, membervalue in memberlist.items():
-    await vclist_channel.send(f'ユーザー名: {memberkey}  通話時間: {membervalue}　秒')
+        await vclist_channel.send(f'ユーザー名: {memberkey}  通話時間: {membervalue}　秒')
     
 @tasks.loop(seconds=60)
 async def loop():
