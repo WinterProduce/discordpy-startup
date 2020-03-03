@@ -1,6 +1,6 @@
 import discord
 import datetime as dt
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import time
 from discord.ext import tasks, commands
 import random
@@ -10,6 +10,7 @@ import os
 client = discord.Client()
 pretime_dict = {}
 memberlist = {}
+JST = timezone(timedelta(hours=+9), 'JST')
 
 token = os.environ['DISCORD_BOT_TOKEN']
 
@@ -34,20 +35,24 @@ async def Resetvclist():
     memberlist = dict(zip(membername, zero)) # リストを使用して辞書に格納
     await reset_channel.send('総接続時間をリセットしました')
 
+# 総通話時間を出力する処理
 async def Sendvclist():
     vclist_channel = client.get_channel(682141572317446167)
     for memberkey, membervalue in memberlist.items():
         await vclist_channel.send(f'ユーザー名: {memberkey}  通話時間: {membervalue} 秒')
-    
+
+# ６０秒に一回ループさせる処理
 @tasks.loop(seconds=60)
 async def loop():
     loop_channel = client.get_channel(682141572317446167)
-    checktime = datetime.now().strftime('%a-%H:%M')
-    if checktime == 'Mon-00:00':
+    checktime = datetime.now(JST).strftime('%a-%H:%M')
+    if checktime == 'Tue-15:30':
         await loop_channel.send('月曜日の０時０分になったため総接続時間を出力しデータをクリアします')
         await Sendvclist()
         await Resetvclist()
-@tasks.loop(seconds=60)
+# ループ処理実行
+loop.start()
+
 # ここからボイスチャンネルの入退出を検知する処理
 @client.event
 async def on_voice_state_update(member, before, after): 
@@ -55,7 +60,7 @@ async def on_voice_state_update(member, before, after):
     global memberlist # VCの１週間の記録用の辞書
     if member.guild.id == 681853809789501440 and (before.channel != after.channel): # 特定のサーバーだけ処理が行われるように
         print('ボイスチャンネルに変化があったよ！')
-        now = datetime.now()
+        now = datetime.now(JST)
         alert_channel = client.get_channel(682141572317446167) # 入退室ログを出力するチャンネルを指定
 
         if before.channel is None:  # ここから入室時の処理
