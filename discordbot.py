@@ -174,13 +174,13 @@ async def on_message(message):
                 await message.channel.send('君の権限だと実行できないよ！')
 
         if message.content == '?vc':
-        　　　vclist_channel = client.get_channel(682141572317446167)
-    　　　　　for memberkey, membervalue in memberlist.items():
-        　　　　　　　await vclist_channel.send(f'ユーザー名: {memberkey}  通話時間: {membervalue} 秒')
-    　　　　　for memberkey60, membervalue60 in memberlist.items():
-        　　　if membervalue60 >= 3600:
-            　　　　　await vclist_channel.send(f'総接続時間が60分以上のユーザー: {memberkey60}')
-        　　　else:
-            　　　　　await vclist_channel.send('総接続時間が60分以上のユーザーはいませんでした')
+            vclist_channel = client.get_channel(682141572317446167)
+            for memberkey, membervalue in memberlist.items():
+                await vclist_channel.send(f'ユーザー名: {memberkey}  通話時間: {membervalue} 秒')
+            for memberkey60, membervalue60 in memberlist.items():
+                if membervalue60 >= 3600:
+                await vclist_channel.send(f'総接続時間が60分以上のユーザー: {memberkey60}')
+            else:
+                await vclist_channel.send('総接続時間が60分以上のユーザーはいませんでした')
 
 client.run(token)
