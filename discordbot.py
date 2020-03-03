@@ -179,7 +179,7 @@ async def on_message(message):
                 await vclist_channel.send(f'ユーザー名: {memberkey}  通話時間: {membervalue} 秒')
             for memberkey60, membervalue60 in memberlist.items():
                 if membervalue60 >= 3600:
-                await vclist_channel.send(f'総接続時間が60分以上のユーザー: {memberkey60}')
+                    await vclist_channel.send(f'総接続時間が60分以上のユーザー: {memberkey60}')
             else:
                 await vclist_channel.send('総接続時間が60分以上のユーザーはいませんでした')
 
