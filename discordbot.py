@@ -161,7 +161,7 @@ async def on_message(message):
                 await message.channel.send(f'メンバー一覧 : {memberkey}')
     
         if message.content == '?resetvclist':
-            if message.author.role.id == 681853895995031552:
+            if message.author.roles.id == 681853895995031552:
                 membername = [member.name for member in client.get_all_members() if not member.bot] # 全員分のNAMEを辞書のkeyに入れる処理
                 zero = [0,0,0,0,0,0,0,0,0,0,0,0,0,0] # 辞書の値に全員分０を代入
                 memberlist = dict(zip(membername, zero)) # リストを使用して辞書に格納
