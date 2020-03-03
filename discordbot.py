@@ -174,9 +174,6 @@ async def on_message(message):
                 await message.channel.send('君の権限だと実行できないよ！')
 
         if message.content == '?vc':
-            for memberkey, membervalue in memberlist.items():
-                await message.channel.send(f'ユーザー名: {memberkey}  通話時間: {membervalue} 秒')
-
-
+            await Sendvclist()
 
 client.run(token)
