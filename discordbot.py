@@ -40,13 +40,15 @@ async def Sendvclist():
     vclist_channel = client.get_channel(682141572317446167)
     for memberkey, membervalue in memberlist.items():
         await vclist_channel.send(f'ユーザー名: {memberkey}  通話時間: {membervalue} 秒')
+        if membervalue >= 3600:
+            await vclist_channel.send(f'総接続時間が60分以上のユーザー {memberkey}')
 
 # ６０秒に一回ループさせる処理
 @tasks.loop(seconds=60)
 async def loop():
     loop_channel = client.get_channel(682141572317446167)
     checktime = datetime.now(JST).strftime('%a-%H:%M')
-    if checktime == 'Mon-00:00':
+    if checktime == 'Tue-15:30':
         await loop_channel.send('月曜日の０時０分になったため総接続時間を出力しデータをクリアします')
         await Sendvclist()
         await Resetvclist()
@@ -123,7 +125,17 @@ async def on_message(message):
     global memberlist
     if client.user != message.author:
         if message.content == '?help':
-            await message.channel.send('?wadai で私が話題を提供してあげるよ！ \n ?count でサーバー人数を表示するよ！ \n ?vc で全員の総接続時間を表示するよ \n ?resetvclist で総接続時間を表示するよ！')
+            authorname = 'れんあいのくにの乙女🍎'
+            authorurl = 'https://github.com/WinterProduce/discordpy-startup/blob/master/discordbot.py'
+            authoricon = 'https://cdn.discordapp.com/attachments/508795281299603469/684325828112547850/image_-_2.jpg'
+            embed = discord.Embed(title ='私の使い方だよ！', description = 'コマンドと使い方をお見せするね！', color=0X0000FF)
+            embed.add_field(name = '?help', value = 'あなたが今見ているこれを表示するよ！', inline=False)
+            embed.add_field(name = '?count', value = 'サーバーのメンバーカウントを表示するよ！', inline=False)
+            embed.add_field(name = '?vc', value = '全員のおしゃべりした時間を表示するよ！', inline=False)
+            embed.add_field(name = '?resetvclist', value = '総接続時間をリセットするよ！', inline=False)
+            embed.set_thumbnail(url = 'https://cdn.discordapp.com/attachments/508795281299603469/684324816525983775/ERn70g_UUAAUx-1.png')
+            embed.set_author(name = authorname, url = authorurl, icon_url = authoricon)
+            await message.channel.send(embed=embed)
 
         if message.content == '?wadai':
             choice = random.choice(wadai)
@@ -151,7 +163,8 @@ async def on_message(message):
             membername = [member.name for member in client.get_all_members() if not member.bot] # 全員分のNAMEを辞書のkeyに入れる処理
             zero = [0,0,0,0,0,0,0,0,0,0,0,0,0,0] # 辞書の値に全員分０を代入
             memberlist = dict(zip(membername, zero)) # リストを使用して辞書に格納
-            await message.channel.send('総接続時間記録の値、すべてに０を代入しました')
+            await message.channel.send('総接続時間をリセットしました！')
+
         if message.content == '?vc':
             for memberkey, membervalue in memberlist.items():
                 await message.channel.send(f'ユーザー名: {memberkey}  通話時間: {membervalue} 秒')
