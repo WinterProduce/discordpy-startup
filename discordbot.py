@@ -121,7 +121,8 @@ async def on_message(message):
             memberlist = dict(zip(membername, zero)) # リストを使用して辞書に格納
             await message.channel.send('総接続時間記録の値、すべてに０を代入しました')
         if message.content == '?vc':
-            await message.channel.send('以前のresetからの総接続時間はこちらです！'memberlist)
+            for memberkey, membervalue in memberlist.items():
+                await message.channel.send("ユーザー名:" + memberkey + " 通話時間:" + membervalue)
 
 
 
