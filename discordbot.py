@@ -2,7 +2,7 @@ import discord
 import datetime as dt
 from datetime import datetime, timedelta
 import time
-from discord.ext import tasks
+from discord.ext import tasks, commands
 import random
 import os
 
@@ -22,11 +22,12 @@ async def on_ready():
     print('------')
     startup_channel = client.get_channel(682141572317446167)
     await startup_channel.send('今から活動開始します！')
-    game = discord.game('活動中だよ！')
-    await client.change_presence(status = discord.status.online, activity = game)
+    activity = discord.Game(name='活動してるよ！')
+    await client.change_presence(activity=activity)
 
 # 指定時間に総接続時間をリセットする処理
 async def Resetvclist():
+    global memberlist
     reset_channel = client.get_channel(682141572317446167)
     membername = [member.name for member in client.get_all_members() if not member.bot] # 全員分のNAMEを辞書のkeyに入れる処理
     zero = [0,0,0,0,0,0,0,0,0,0,0,0,0,0] # 辞書の値に全員分０を代入
@@ -36,13 +37,13 @@ async def Resetvclist():
 async def Sendvclist():
     vclist_channel = client.get_channel(682141572317446167)
     for memberkey, membervalue in memberlist.items():
-        await vclist_channel.send(f'ユーザー名: {memberkey}  通話時間: {membervalue}　秒')
+        await vclist_channel.send(f'ユーザー名: {memberkey}  通話時間: {membervalue} 秒')
     
 @tasks.loop(seconds=60)
 async def loop():
     loop_channel = client.get_channel(682141572317446167)
     checktime = datetime.now().strftime('%a-%H:%M')
-    if checktime = 'Mon-00:00':
+    if checktime == 'Mon-00:00':
         await loop_channel.send('月曜日の０時０分になったため総接続時間を出力しデータをクリアします')
         await Sendvclist()
         await Resetvclist()
@@ -117,7 +118,7 @@ async def on_message(message):
     global memberlist
     if client.user != message.author:
         if message.content == '?help':
-            await message.channel.send('?wadaiで私が話題を提供してあげるよ！ \n　?countでサーバー人数を表示するよ！ \n ?vcで全員の総接続時間を表示するよ \n ?resetvclistで総接続時間を表示するよ！)
+            await message.channel.send('?wadai で私が話題を提供してあげるよ！ \n ?count でサーバー人数を表示するよ！ \n ?vc で全員の総接続時間を表示するよ \n ?resetvclist で総接続時間を表示するよ！')
 
         if message.content == '?wadai':
             choice = random.choice(wadai)
@@ -148,7 +149,7 @@ async def on_message(message):
             await message.channel.send('総接続時間記録の値、すべてに０を代入しました')
         if message.content == '?vc':
             for memberkey, membervalue in memberlist.items():
-                await message.channel.send(f'ユーザー名: {memberkey}  通話時間: {membervalue}　秒')
+                await message.channel.send(f'ユーザー名: {memberkey}  通話時間: {membervalue} 秒')
 
 
 
