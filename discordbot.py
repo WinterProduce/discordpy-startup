@@ -104,7 +104,7 @@ async def Incheck():
 async def weekloop():
     checktime = datetime.now(JST).strftime('%a-%H:%M')
     channel = client.get_channel(682141572317446167)
-    if checktime == 'Wed-12:10':
+    if checktime == 'Mon-00:00':
         await channel.send('月曜日の０時０分になったため総接続時間を出力しデータをクリアします')
         await Sendvclist()
         await Resetvclist()
@@ -114,7 +114,7 @@ async def weekloop():
 @tasks.loop(seconds=60)
 async def dayloop():
     checkday = datetime.now(JST).strftime('%H:%M')
-    if checkday == '12:10':
+    if checkday == '01:00':
         channel = client.get_channel(682141572317446167)
         await channel.send('前日、Inしたかどうかを検知します')
         await Incheck()
@@ -192,6 +192,7 @@ wadai = [ # 話題リスト
 @client.event
 async def on_message(message):
     global memberlist
+    global inmemberlist
     if client.user != message.author:
 
         if message.content == '?help':
@@ -200,9 +201,13 @@ async def on_message(message):
             authoricon = 'https://cdn.discordapp.com/attachments/508795281299603469/684325828112547850/image_-_2.jpg'
             embed = discord.Embed(title ='私の使い方だよ！', description = 'コマンドと使い方をお見せするね！', color=0X0000FF)
             embed.add_field(name = '?help', value = 'あなたが今見ているこれを表示するよ！', inline=False)
+            embed.add_field(name = '?wadai', value = 'みんなに話題を提供するよ！', inline = False)
             embed.add_field(name = '?count', value = 'サーバーのメンバーカウントを表示するよ！', inline=False)
+            embed.add_field(name = '?members', value = 'メンバー一覧を表示するよ！', inline = False)
             embed.add_field(name = '?vc', value = '全員のおしゃべりした時間を表示するよ！', inline=False)
+            embed.add_field(name = '?in', value = '全員のIn率を表示するよ！', inline = False)
             embed.add_field(name = '?resetvclist', value = '総接続時間をリセットするよ！', inline=False)
+            embed.add_field(name = '?resetinlist', value = 'In率リストをリセットするよ！', inline = False)
             embed.set_thumbnail(url = 'https://cdn.discordapp.com/attachments/508795281299603469/684324816525983775/ERn70g_UUAAUx-1.png')
             embed.set_author(name = authorname, url = authorurl, icon_url = authoricon)
             await message.channel.send(embed=embed)
@@ -231,30 +236,25 @@ async def on_message(message):
     
         if message.content == '?resetvclist':
             if message.author.guild_permissions.administrator: # 管理者しか実行できないようにする
-                membername = [member.name for member in client.get_all_members() if not member.bot] # 全員分のNAMEを辞書のkeyに入れる処理
-                zero = []
+                membername = [member.name for member in client.get_all_members() if not member.bot] # Bot以外のユーザー名を辞書のkeyに入れる処理
+                zero = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] # 辞書の値に全員分０を代入
                 memberlist = dict(zip(membername, zero)) # リストを使用して辞書に格納
+                await message.channel.send('再起動に伴い総接続時間辞書の値すべてに０を代入したよ！')
+                await message.channel.send('総接続時間をリセットしたよ！')
 
-                for memberlistkey in memberlist.keys(): # 総接続時間辞書の値すべてに0を代入
-                    memberlist[memberlistkey] = 0
-                print(memberlist)
-                await message.channel.send('総接続時間をリセットしました！')
             else:
                 await message.channel.send('君の権限だと実行できないよ！')
-        
+
         if message.content == '?resetinlist':
             if message.author.guild_permissions.administrator:
-                global inmemberlist
                 inmembername = [member.name for member in client.get_all_members() if not member.bot] # Bot以外のユーザー名を辞書に入れる処理
-                inmemberzero = []
+                inmemberzero = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
                 inmemberlist = dict(zip(inmembername, inmemberzero)) # In率処理の辞書作成
+                await message.channel.send('In率リストをリセットしたよ！')
 
-                for inmemberlistkey in inmemberlist.keys(): # 辞書の値すべてに0を代入
-                    inmemberlist[inmemberlistkey] = 0
-                    print(inmemberlist)
+            else:
+                await message.channel.send('君の権限だと実行できないよ！')
 
-                channel = client.get_channel(682141572317446167)
-                await channel.send('In率をリセットしました')
         # 全員の総接続時間と60分以上Inしている人を出力
         if message.content == '?vc':
             channel = client.get_channel(682141572317446167)
@@ -272,7 +272,7 @@ async def on_message(message):
 
             for inkey, invalue in inmemberlist.items():
                 await channel.send(f'ユーザー名: {inkey}  In率: {invalue} 日')
-    
+
             for inkey4, invalue4 in inmemberlist.items():
                 if invalue4 >= 4:
                     in4 = {inkey4}
