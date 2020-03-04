@@ -26,23 +26,6 @@ async def on_ready():
     print('------')
     channel = client.get_channel(682141572317446167)
     await channel.send('今から活動開始します！')
-    # ここから総接続時間辞書のリセット処理
-    membername = [member.name for member in client.get_all_members() if not member.bot] # Bot以外のユーザー名を辞書のkeyに入れる処理
-    zero = []
-    memberlist = dict(zip(membername, zero)) # リストを使用して辞書に格納
-    for memberlistkey in memberlist.keys(): # 総接続時間辞書の値すべてに0を代入
-        memberlist[memberlistkey] = 0
-        print(memberlist)
-    await channel.send('再起動に伴い総接続時間辞書の値すべてに０を代入しました！')
-
-    inmembername = [member.name for member in client.get_all_members() if not member.bot] # Bot以外のユーザー名を辞書に入れる処理
-    inmemberzero = []
-    inmemberlist = dict(zip(inmembername, inmemberzero)) # In率処理の辞書作成
-
-    for inmemberlistkey in inmemberlist.keys(): # 辞書の値すべてに0を代入
-        inmemberlist[inmemberlistkey] = 0
-        print(inmemberlist)
-    await channel.send('再起動に伴いIn率処理の辞書の値すべてに0を代入しました！')
 
     activity = discord.Game(name='🍎')
     await client.change_presence(activity=activity)
@@ -121,7 +104,7 @@ async def Incheck():
 async def weekloop():
     checktime = datetime.now(JST).strftime('%a-%H:%M')
     channel = client.get_channel(682141572317446167)
-    if checktime == 'Wed-11:47':
+    if checktime == 'Wed-12:10':
         await channel.send('月曜日の０時０分になったため総接続時間を出力しデータをクリアします')
         await Sendvclist()
         await Resetvclist()
@@ -131,7 +114,7 @@ async def weekloop():
 @tasks.loop(seconds=60)
 async def dayloop():
     checkday = datetime.now(JST).strftime('%H:%M')
-    if checkday == '11:47':
+    if checkday == '12:10':
         channel = client.get_channel(682141572317446167)
         await channel.send('前日、Inしたかどうかを検知します')
         await Incheck()
@@ -248,12 +231,30 @@ async def on_message(message):
     
         if message.content == '?resetvclist':
             if message.author.guild_permissions.administrator: # 管理者しか実行できないようにする
-                membername = [member.name for member in client.get_all_members() if not member.bot] # Bot以外のユーザー名を辞書のkeyに入れる処理
-                zero = [0,0,0,0,0,0,0,0,0,0,0,0,0,0] # 辞書の値に全員分０を代入
+                membername = [member.name for member in client.get_all_members() if not member.bot] # 全員分のNAMEを辞書のkeyに入れる処理
+                zero = []
                 memberlist = dict(zip(membername, zero)) # リストを使用して辞書に格納
+
+                for memberlistkey in memberlist.keys(): # 総接続時間辞書の値すべてに0を代入
+                    memberlist[memberlistkey] = 0
+                print(memberlist)
                 await message.channel.send('総接続時間をリセットしました！')
             else:
                 await message.channel.send('君の権限だと実行できないよ！')
+        
+        if message.content == '?resetinlist':
+            if message.author.guild_permissions.administrator:
+                global inmemberlist
+                inmembername = [member.name for member in client.get_all_members() if not member.bot] # Bot以外のユーザー名を辞書に入れる処理
+                inmemberzero = []
+                inmemberlist = dict(zip(inmembername, inmemberzero)) # In率処理の辞書作成
+
+                for inmemberlistkey in inmemberlist.keys(): # 辞書の値すべてに0を代入
+                    inmemberlist[inmemberlistkey] = 0
+                    print(inmemberlist)
+
+                channel = client.get_channel(682141572317446167)
+                await channel.send('In率をリセットしました')
         # 全員の総接続時間と60分以上Inしている人を出力
         if message.content == '?vc':
             channel = client.get_channel(682141572317446167)
