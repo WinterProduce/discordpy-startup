@@ -5,9 +5,7 @@ import time
 from discord.ext import tasks, commands
 import random
 import os
-import urllib.request
-import json
-import pickle
+
 
 
 
@@ -31,9 +29,9 @@ async def on_ready():
     channel = client.get_channel(682141572317446167)
     await channel.send('今から活動開始します！')
     await Resetvclist()
-    await channel.send('再起動に伴い総接続時間をリセットしました')
+    await channel.send('再起動に伴い総接続時間をリセットしたよ！')
     await Resetinlist()
-    await channel.send('再起動に伴いIn率をリセットしました')
+    await channel.send('再起動に伴いIn率をリセットしたよ！')
 
     activity = discord.Game(name='🍎')
     await client.change_presence(activity=activity)
@@ -46,7 +44,7 @@ async def Resetvclist():
     memberlist = dict(zip(membername, zero)) # リストを使用して辞書に格納
 
     channel = client.get_channel(682141572317446167)
-    await channel.send('総接続時間をリセットしました')
+    await channel.send('総接続時間をリセットしたよ！')
 
 async def Resetinlist():
     global inmemberlist
@@ -55,7 +53,7 @@ async def Resetinlist():
     inmemberlist = dict(zip(inmembername, inmemberzero)) # In率処理の辞書作成
 
     channel = client.get_channel(682141572317446167)
-    await channel.send('In率をリセットしました')
+    await channel.send('In率をリセットしたよ！')
 
 # １週間の総接続時間を出力する処理
 async def Sendvclist():
@@ -105,7 +103,7 @@ async def weekloop():
     checktime = datetime.now(JST).strftime('%a-%H:%M')
     channel = client.get_channel(682141572317446167)
     if checktime == 'Mon-00:00':
-        await channel.send('月曜日の０時０分になったため総接続時間を出力しデータをクリアします')
+        await channel.send('月曜日の０時０分になったから総接続時間を出力してデータをクリアするね！')
         await Sendvclist()
         await Resetvclist()
         await Sendinlist()
@@ -116,7 +114,7 @@ async def dayloop():
     checkday = datetime.now(JST).strftime('%H:%M')
     if checkday == '01:00':
         channel = client.get_channel(682141572317446167)
-        await channel.send('前日、Inしたかどうかを検知します')
+        await channel.send('前日、Inしたかどうかを検知して記録するね！')
         await Incheck()
 
 # ここからボイスチャンネルの入退出を検知する処理
@@ -132,7 +130,7 @@ async def on_voice_state_update(member, before, after):
 
             if before.channel is None:  # ここから入室時の処理
                 pretime_dict[member.name] = time.time() 
-                msg = f'{now:%m/%d-%H:%M} に {member.name} が {after.channel.name} に参加しました。' # 入室時メッセージ
+                msg = f'{now:%m/%d-%H:%M} に {member.name} さんが {after.channel.name} に参加したよ！' # 入室時メッセージ
                 await channel.send(msg)
                 print(pretime_dict)
 
@@ -159,7 +157,7 @@ async def on_voice_state_update(member, before, after):
                     endseconds = interimendminutes % 60
 
                 # 退出時のメッセージ
-                msg = f'{now:%m/%d-%H:%M} に {member.name} が {before.channel.name} から退出しました。 通話時間は {int(endhours)} 時間 {int(endminutes)} 分 {int(endseconds)} 秒でした。' 
+                msg = f'{now:%m/%d-%H:%M} に {member.name} さんが {before.channel.name} から退出したよ！ 通話時間は {int(endhours)} 時間 {int(endminutes)} 分 {int(endseconds)} 秒だったよ！。' 
                 await channel.send(msg)
 
                 # ここから通話時間を記録していく処理
