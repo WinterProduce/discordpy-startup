@@ -20,8 +20,6 @@ token = os.environ['DISCORD_BOT_TOKEN']
 # Botログイン処理
 @client.event
 async def on_ready():
-    global memberlist
-    global inmemberlist
     print('起動完了しました！')
     print(client.user.name)
     print(client.user.id)
@@ -29,10 +27,10 @@ async def on_ready():
     channel = client.get_channel(682141572317446167)
     await channel.send('今から活動開始します！')
     await Resetvclist()
-    await channel.send('再起動に伴い総接続時間をリセットしたよ！')
+    await channel.send('再起動に伴い総接続時間をリセットしました')
     await Resetinlist()
-    await channel.send('再起動に伴いIn率をリセットしたよ！')
-
+    await channel.send('再起動に伴いIn率をリセットしました')
+    
     activity = discord.Game(name='🍎')
     await client.change_presence(activity=activity)
 
@@ -157,16 +155,12 @@ async def on_voice_state_update(member, before, after):
                     endseconds = interimendminutes % 60
 
                 # 退出時のメッセージ
-                msg = f'{now:%m/%d-%H:%M} に {member.name} さんが {before.channel.name} から退出したよ！ 通話時間は {int(endhours)} 時間 {int(endminutes)} 分 {int(endseconds)} 秒だったよ！。' 
+                msg = f'{now:%m/%d-%H:%M} に {member.name} さんが {before.channel.name} から退出したよ！ 通話時間は {int(endhours)} 時間 {int(endminutes)} 分 {int(endseconds)} 秒だったよ！' 
                 await channel.send(msg)
 
                 # ここから通話時間を記録していく処理
-                if memberlist[member.name] in memberlist:
-                    memberlist[member.name] = memberlist[member.name] + int(roundingtime)
-                    await channel.send('総接続時間を更新したよ！')
-                # エラー処理
-                else:
-                    await channel.send('?resetvclistが再起動の後実行されてないと思うよ！')
+                memberlist[member.name] = memberlist[member.name] + int(roundingtime)
+                await channel.send('総接続時間を更新したよ！')
 
 # ランダムに話題を出すプログラム
 wadai = [ # 話題リスト
