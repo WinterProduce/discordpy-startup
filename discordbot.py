@@ -32,7 +32,7 @@ async def on_ready():
     memberlist = dict(zip(membername, zero)) # リストを使用して辞書に格納
     for memberlistkey in memberlist.keys(): # 総接続時間辞書の値すべてに0を代入
         memberlist[memberlistkey] = 0
-    print(memberlist)
+        print(memberlist)
     await channel.send('再起動に伴い総接続時間辞書の値すべてに０を代入しました！')
 
     inmembername = [member.name for member in client.get_all_members() if not member.bot] # Bot以外のユーザー名を辞書に入れる処理
@@ -41,7 +41,7 @@ async def on_ready():
 
     for inmemberlistkey in inmemberlist.keys(): # 辞書の値すべてに0を代入
         inmemberlist[inmemberlistkey] = 0
-    print(inmemberlist)
+        print(inmemberlist)
     await channel.send('再起動に伴いIn率処理の辞書の値すべてに0を代入しました！')
 
     activity = discord.Game(name='🍎')
@@ -69,7 +69,7 @@ async def Resetinlist():
 
     for inmemberlistkey in inmemberlist.keys(): # 辞書の値すべてに0を代入
         inmemberlist[inmemberlistkey] = 0
-    print(inmemberlist)
+        print(inmemberlist)
 
     channel = client.get_channel(682141572317446167)
     await channel.send('In率をリセットしました')
@@ -266,5 +266,18 @@ async def on_message(message):
                 elif membervalue60 < 3600:
                     vc0 = {memberkey60}
                     await channel.send(f'総接続時間が60分未満のユーザー: {vc0}')
+        if message.content == '?in':
+            channel = client.get_channel(682141572317446167)
+
+            for inkey, invalue in inmemberlist.items():
+                await channel.send(f'ユーザー名: {inkey}  In率: {invalue} 日')
+    
+            for inkey4, invalue4 in inmemberlist.items():
+                if invalue4 >= 4:
+                    in4 = {inkey4}
+                    await channel.send(f'In率が4日以上のユーザー: {in4}')
+                elif invalue4 < 4:
+                    in0 = {inkey4}
+                    await channel.send(f'In率が4日未満のユーザー: {in0}')
 
 client.run(token)
