@@ -13,6 +13,7 @@ client = discord.Client()
 pretime_dict = {}
 memberlist = {}
 inmemberlist = {}
+mute_dict = {}
 JST = timezone(timedelta(hours=+9), 'JST')
 
 token = os.environ['DISCORD_BOT_TOKEN']
@@ -31,7 +32,7 @@ async def on_ready():
     await Resetinlist()
     await channel.send('再起動に伴いIn率をリセットしました')
     
-    activity = discord.Game(name='🍎')
+    activity = discord.Game(name='おしごと🍎')
     await client.change_presence(activity=activity)
 
 # 指定時間に総接続時間をリセットする処理
@@ -88,12 +89,11 @@ async def Incheck():
     channel = client.get_channel(682141572317446167)
     for memberkey0, membervalue0 in memberlist.items(): # 1秒以上通話した人の名前を検知
         if membervalue0 > 0:
-            for name0 in memberkey0:
-                inmemberlist[name0] = inmemberlist[name0] + 1
-            print(inmemberlist)
-            await channel.send('昨日の0時0分より今までにInした人を記録したよ！')
+            inmemberlist[memberkey0] = inmemberlist[memberkey0] + 1
         else:
             return
+    print(inmemberlist)
+    await channel.send('昨日の0時0分より今までにInした人を記録したよ！')
 
 # ６０秒に一回ループさせる処理
 @tasks.loop(seconds=60)
@@ -118,22 +118,71 @@ async def dayloop():
 # ここからボイスチャンネルの入退出を検知する処理
 @client.event
 async def on_voice_state_update(member, before, after): 
-    global pretime_dict # 辞書型で入室時間をユーザーごとに記録することで入室時間の再代入による不具合を回避
+    global pretime_dict # 入退出時刻を記録する辞書
     global memberlist # VCの１週間の記録用の辞書
+    global mute_dict # Mute時間を記録する辞書
+    global mutehours
+    global muteminutes
+    global muteseconds
     channel = client.get_channel(682141572317446167)
+    oneroom = [681867519379767322, 681867557627756613, 681867619246145550, 681867705329909765, 681867763505037321, 681867861937225729, 681867973127962792, 681868176501506079]
+
     if member.guild.id == 681853809789501440 and (before.channel != after.channel): # 特定のサーバーだけ処理が行われるように
+
         if not member.bot: # Botだった場合弾く処理
             print('ボイスチャンネルに変化があったよ！')
             now = datetime.now(JST)
 
-            if before.channel is None:  # ここから入室時の処理
-                pretime_dict[member.name] = time.time() 
-                msg = f'{now:%m/%d-%H:%M} に {member.name} さんが {after.channel.name} に参加したよ！' # 入室時メッセージ
+            # Mute状態になった時の処理
+            if before.self_mute is None:
+                mute_dict[member.name] = time.time()
+                msg = f'{now:%m/%d-%H:%M} に {member.name} さんが ミュートにしたよ！'
                 await channel.send(msg)
-                print(pretime_dict)
+                print(msg)
+                print(f'ミュート状態の変更を検知したため辞書を更新したよ！ {mute_dict}')
+
+            # Mute状態が解除された時の処理
+            elif after.self_mute is None:
+                mutetime = time.time() - mute_dict[member.name] # ミュート状態の時間を計算
+                rounding_mute = round((mutetime / 1), 1) # 経過時間の小数点一桁で四捨五入
+
+                # mutetimeを時、分、秒に変換する処理
+                mutehours = 0
+                muteminutes = 0
+                muteseconds = rounding_mute
+
+                # 1分以上1時間未満の通話時間の処理
+                if 3600 > rounding_mute >= 60:
+                    muteminutes = rounding_mute /60
+                    muteseconds = rounding_mute % 60
+
+                # 1時間以上の通話時間の処理
+                elif rounding_mute >= 3600:
+                    mutehours = rounding_mute / 3600
+                    interimendmuteminutes = rounding_mute % 3600
+                    muteminutes = interimendmuteminutes /60
+                    muteseconds = interimendmuteminutes % 60
+                msg = f'{now:%m/%d-%H:%M} に {member.name} さんが ミュート状態を解除したよ！ ミュート時間は {int(mutehours)} 時間 {int(muteminutes)} 分 {int(muteseconds)} 秒だったよ！'
+                print(msg)
+                print(f'ミュート状態の変更を検知したため辞書を更新したよ！ {mute_dict}')
+
+            elif before.channel is None:  # ここから入室時の処理
+                if not after.channel.id in oneroom:
+                    pretime_dict[member.name] = time.time() 
+                    msg = f'{now:%m/%d-%H:%M} に {member.name} さんが {after.channel.name} に参加したよ！' # 入室時メッセージ
+                    await channel.send(msg)
+                    print(msg)
+                    print(f'入室を検知したため辞書を更新したよ！{pretime_dict}')
+
+                # 直接個通部屋に入った時の処理
+                elif after.channel.id in oneroom:
+                    pretime_dict[member.name] = time.time()
+                    msg = f'{now:%m/%d-%H:%M} に {member.name} さんが 個通部屋 {after.channel.name} に入室したよ！' # 入室メッセージ
+                    await channel.send(msg)
+                    print(msg)
+                    print(f'入室を検知したため辞書を更新したよ！{pretime_dict}')
 
             elif after.channel is None: # 退出時の処理
-                print(pretime_dict)
                 duration_time = time.time() - pretime_dict[member.name] # 入室時からの経過時間を計算
                 roundingtime = round((duration_time / 1), 1) # 経過時間の小数点一桁で四捨五入
 
@@ -155,12 +204,26 @@ async def on_voice_state_update(member, before, after):
                     endseconds = interimendminutes % 60
 
                 # 退出時のメッセージ
-                msg = f'{now:%m/%d-%H:%M} に {member.name} さんが {before.channel.name} から退出したよ！ 通話時間は {int(endhours)} 時間 {int(endminutes)} 分 {int(endseconds)} 秒だったよ！' 
+                msg = f'{now:%m/%d-%H:%M} に {member.name} さんが {before.channel.name} から退出したよ！ 通話時間は {int(endhours)} 時間 {int(endminutes)} 分 {int(endseconds)} 秒で \n ミュート時間は {int(mutehours)} 時間 {int(muteminutes)} 分 {int(muteseconds)} 秒だったよ！' 
                 await channel.send(msg)
+                print(msg)
+                print(f'退室を検知したため辞書を更新したよ！{pretime_dict}')
 
                 # ここから通話時間を記録していく処理
                 memberlist[member.name] = memberlist[member.name] + int(roundingtime)
                 await channel.send('総接続時間を更新したよ！')
+            
+            # 個通部屋入室を検知
+            elif after.channel.id in oneroom:
+                msg = f'{now:%m/%d-%H:%M} に {member.name} さんが 個通部屋 {after.channel.name} に入室したよ！'
+                await channel.send(msg)
+                print(msg)
+
+            # ここから部屋移動を通知する処理
+            elif before.channel != after.channel:
+                msg = f'{now:%m/%d-%H:%M} に {member.name} さんが {before.channel.name} から {after.channel.name} に移動したよ!'
+                await channel.send(msg)
+                print(msg)
 
 # ランダムに話題を出すプログラム
 wadai = [ # 話題リスト
@@ -214,6 +277,7 @@ async def on_message(message):
     global inmemberlist
     if client.user != message.author:
 
+        # ?helpでembedを表示させる処理
         if message.content == '?help':
             authorname = 'れんあいのくにの乙女🍎'
             authorurl = 'https://github.com/WinterProduce/discordpy-startup/blob/master/discordbot.py'
@@ -231,10 +295,12 @@ async def on_message(message):
             embed.set_author(name = authorname, url = authorurl, icon_url = authoricon)
             await message.channel.send(embed=embed)
 
+        # 話題リストにある話題をランダムに出力する処理
         if message.content == '?wadai':
             choice = random.choice(wadai)
             await message.channel.send(choice)
 
+        # メンバー、ユーザー、Bot数をそれぞれ出力する処理
         if message.content == '?count':
             guild = message.guild
             # ユーザとBOTを区別しない場合
@@ -249,10 +315,12 @@ async def on_message(message):
             bot_count = sum(1 for member in guild.members if member.bot)
             await message.channel.send(f'BOT数：{bot_count}')
 
+        # メンバーの名前をすべて出力する処理
         if message.content == '?members':
             for memberkey, in memberlist.keys():
                 await message.channel.send(f'メンバー一覧 : {memberkey}')
-    
+
+        # 総接続時間の辞書の値すべてに0を代入する処理
         if message.content == '?resetvclist':
             if message.author.guild_permissions.administrator: # 管理者しか実行できないようにする
                 membername = [member.name for member in client.get_all_members() if not member.bot] # Bot以外のユーザー名を辞書のkeyに入れる処理
@@ -263,6 +331,7 @@ async def on_message(message):
             else:
                 await message.channel.send('君の権限だと実行できないよ！')
 
+        # In率辞書の値すべてに0を代入する処理
         if message.content == '?resetinlist':
             if message.author.guild_permissions.administrator:
                 inmembername = [member.name for member in client.get_all_members() if not member.bot] # Bot以外のユーザー名を辞書に入れる処理
@@ -286,7 +355,7 @@ async def on_message(message):
                     vc0 = {memberkey60}
                     await channel.send(f'総接続時間が60分未満のユーザー: {vc0}')
 
-        # In率の表示するコマンド
+        # 全員のIn率と4日以上Inしている人を出力
         if message.content == '?in':
             channel = client.get_channel(682141572317446167)
 
@@ -305,4 +374,5 @@ async def on_message(message):
 weekloop.start()
 dayloop.start()
 
+# Botスタート
 client.run(token)
