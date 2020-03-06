@@ -13,7 +13,6 @@ client = discord.Client()
 pretime_dict = {}
 memberlist = {}
 inmemberlist = {}
-mute_dict = {}
 JST = timezone(timedelta(hours=+9), 'JST')
 
 token = os.environ['DISCORD_BOT_TOKEN']
@@ -120,10 +119,6 @@ async def dayloop():
 async def on_voice_state_update(member, before, after): 
     global pretime_dict # 入退出時刻を記録する辞書
     global memberlist # VCの１週間の記録用の辞書
-    global mute_dict # Mute時間を記録する辞書
-    global mutehours
-    global muteminutes
-    global muteseconds
     channel = client.get_channel(682141572317446167)
     oneroom = [681867519379767322, 681867557627756613, 681867619246145550, 681867705329909765, 681867763505037321, 681867861937225729, 681867973127962792, 681868176501506079]
 
@@ -133,40 +128,7 @@ async def on_voice_state_update(member, before, after):
             print('ボイスチャンネルに変化があったよ！')
             now = datetime.now(JST)
 
-            # Mute状態になった時の処理
-            if before.self_mute is None:
-                mute_dict[member.name] = time.time()
-                msg = f'{now:%m/%d-%H:%M} に {member.name} さんが ミュートにしたよ！'
-                await channel.send(msg)
-                print(msg)
-                print(f'ミュート状態の変更を検知したため辞書を更新したよ！ {mute_dict}')
-
-            # Mute状態が解除された時の処理
-            elif after.self_mute is None:
-                mutetime = time.time() - mute_dict[member.name] # ミュート状態の時間を計算
-                rounding_mute = round((mutetime / 1), 1) # 経過時間の小数点一桁で四捨五入
-
-                # mutetimeを時、分、秒に変換する処理
-                mutehours = 0
-                muteminutes = 0
-                muteseconds = rounding_mute
-
-                # 1分以上1時間未満の通話時間の処理
-                if 3600 > rounding_mute >= 60:
-                    muteminutes = rounding_mute /60
-                    muteseconds = rounding_mute % 60
-
-                # 1時間以上の通話時間の処理
-                elif rounding_mute >= 3600:
-                    mutehours = rounding_mute / 3600
-                    interimendmuteminutes = rounding_mute % 3600
-                    muteminutes = interimendmuteminutes /60
-                    muteseconds = interimendmuteminutes % 60
-                msg = f'{now:%m/%d-%H:%M} に {member.name} さんが ミュート状態を解除したよ！ ミュート時間は {int(mutehours)} 時間 {int(muteminutes)} 分 {int(muteseconds)} 秒だったよ！'
-                print(msg)
-                print(f'ミュート状態の変更を検知したため辞書を更新したよ！ {mute_dict}')
-
-            elif before.channel is None:  # ここから入室時の処理
+            if before.channel is None:  # ここから入室時の処理
                 if not after.channel.id in oneroom:
                     pretime_dict[member.name] = time.time() 
                     msg = f'{now:%m/%d-%H:%M} に {member.name} さんが {after.channel.name} に参加したよ！' # 入室時メッセージ
@@ -204,7 +166,7 @@ async def on_voice_state_update(member, before, after):
                     endseconds = interimendminutes % 60
 
                 # 退出時のメッセージ
-                msg = f'{now:%m/%d-%H:%M} に {member.name} さんが {before.channel.name} から退出したよ！ 通話時間は {int(endhours)} 時間 {int(endminutes)} 分 {int(endseconds)} 秒で \n ミュート時間は {int(mutehours)} 時間 {int(muteminutes)} 分 {int(muteseconds)} 秒だったよ！' 
+                msg = f'{now:%m/%d-%H:%M} に {member.name} さんが {before.channel.name} から退出したよ！ 通話時間は {int(endhours)} 時間 {int(endminutes)} 分 {int(endseconds)} 秒だったよ！' 
                 await channel.send(msg)
                 print(msg)
                 print(f'退室を検知したため辞書を更新したよ！{pretime_dict}')
